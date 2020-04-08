@@ -8,7 +8,7 @@
 
 #define PLUGIN_NAME 		"Admin Prefix"
 #define PLUGIN_AUTHOR 		"1mpulse (Discord -> 1mpulse#6496)"
-#define PLUGIN_VERSION 		"1.0.6"
+#define PLUGIN_VERSION 		"1.1.0"
 
 #define AP_CHAT_PREFIX 		"[{LIGHTGREEN}Admin Prefix{DEFAULT}]"
 #define AP_MAX_PREFIX		32
@@ -70,10 +70,7 @@ public void OnClientPostAdminCheck(int iClient)
 public Action PlayerSetTag(Event event, const char[] name, bool dontBroadcast) 
 {
 	int iClient = GetClientOfUserId(GetEventInt(event, "userid")); 
-	if(IsValidClient(iClient) && TrimString(g_iAPInfo[iClient].szPREFIX_Tab) > 0)
-	{
-		CS_SetClientClanTag(iClient, g_iAPInfo[iClient].szPREFIX_Tab);
-	}
+	if(IsValidClient(iClient) && TrimString(g_iAPInfo[iClient].szPREFIX_Tab) > 0) CS_SetClientClanTag(iClient, g_iAPInfo[iClient].szPREFIX_Tab);
 }
 
 public Action:OnChatMessage(&iClient, Handle:recipients, String:name[], String:message[])
@@ -83,9 +80,7 @@ public Action:OnChatMessage(&iClient, Handle:recipients, String:name[], String:m
 		if(TrimString(g_iAPInfo[iClient].szPREFIX_Chat) > 0)
 		{
 			Format(name, MAXLENGTH_NAME, "%s \x03%s", g_iAPInfo[iClient].szPREFIX_Chat, name);
-			
 			if(TrimString(g_iAPInfo[iClient].szPREFIXCOLOR) > 0) Format(name, MAXLENGTH_NAME, "%s%s", g_iAPInfo[iClient].szPREFIXCOLOR, name);
-			
 			Format(name, MAXLENGTH_NAME, " %s", name);
 			ReplaceStringColors(name, MAXLENGTH_NAME);
 			return Plugin_Changed;
@@ -100,15 +95,12 @@ void OpenPluginMainMenu(int iClient)
 	Menu hMenu = new Menu(PluginMainMenu_CallBack);
 	hMenu.ExitBackButton = true;
 	hMenu.SetTitle("Настройка префикса\n ");
-	
 	if(TrimString(g_iAPInfo[iClient].szPREFIX_Tab) > 0) FormatEx(szBuffer, sizeof(szBuffer), "Префикс в таб: %s", g_iAPInfo[iClient].szPREFIX_Tab);
 	else FormatEx(szBuffer, sizeof(szBuffer), "Префикс в таб: Выключено");
 	hMenu.AddItem("", szBuffer);
-	
 	if(TrimString(g_iAPInfo[iClient].szPREFIX_Chat) > 0) FormatEx(szBuffer, sizeof(szBuffer), "Префикс в чате: %s", g_iAPInfo[iClient].szPREFIX_Chat);
 	else FormatEx(szBuffer, sizeof(szBuffer), "Префикс в чате: Выключено");
 	hMenu.AddItem("", szBuffer);
-	
 	if(TrimString(g_iAPInfo[iClient].szPREFIXCOLOR) > 0)
 	{
 		char sColors[64];
@@ -118,7 +110,6 @@ void OpenPluginMainMenu(int iClient)
 	}
 	else FormatEx(szBuffer, sizeof(szBuffer), "Цвет префикса в чате: Выключено");
 	hMenu.AddItem("", szBuffer);
-	
 	hMenu.Display(iClient, 0);
 }
 
@@ -143,15 +134,15 @@ public int PluginMainMenu_CallBack(Menu hMenu, MenuAction action, int iClient, i
 	}
 }
 
-void PrefixTabMenu(int iClient)
+stock void PrefixTabMenu(int iClient)
 {
 	Menu hMenu = new Menu(PrefixTabMenu_CallBack);
 	hMenu.ExitBackButton = true;
-	hMenu.SetTitle("Префикс в таб\nВыберите префикс:");
-	hMenu.AddItem("", "Отключить\n ");
+	hMenu.SetTitle("Префикс в таб\nВыберите префикс:\n ");
+	hMenu.AddItem("", "Отключить\n ", g_iAPInfo[iClient].szPREFIX_Tab[0] ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
 	for(int i = 0; i < g_iCountPrefix; i++)
 	{
-		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX, StrContains(g_iConfigPrefix[i].sPREFIX, g_iAPInfo[iClient].szPREFIX_Tab) != -1 ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX, StrEqual(g_iConfigPrefix[i].sPREFIX, g_iAPInfo[iClient].szPREFIX_Tab, true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 	hMenu.Display(iClient, 0);
 }
@@ -173,21 +164,21 @@ public int PrefixTabMenu_CallBack(Menu hMenu, MenuAction action, int iClient, in
 			strcopy(g_iAPInfo[iClient].szPREFIX_Tab, 64, szBuffer);
 			if(TrimString(szBuffer) > 0) CGOPrintToChat(iClient, "%s {GRAY}Вы установили новый префикс в табе: {LIGHTBLUE}%s", AP_CHAT_PREFIX, szBuffer);
 			else CGOPrintToChat(iClient, "%s {GRAY}Вы отключили префикс в табе.", AP_CHAT_PREFIX);
-			OpenPluginMainMenu(iClient);
 			CS_SetClientClanTag(iClient, g_iAPInfo[iClient].szPREFIX_Tab);
+			PrefixTabMenu(iClient);
 		}
 	}
 }
 
-void PrefixChatMenu(int iClient)
+stock void PrefixChatMenu(int iClient)
 {
 	Menu hMenu = new Menu(PrefixChatMenu_CallBack);
 	hMenu.ExitBackButton = true;
-	hMenu.SetTitle("Префикс в чате\nВыберите префикс:");
-	hMenu.AddItem("", "Отключить\n ");
+	hMenu.SetTitle("Префикс в чате\nВыберите префикс:\n ");
+	hMenu.AddItem("", "Отключить\n ", g_iAPInfo[iClient].szPREFIX_Chat[0] ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
 	for(int i = 0; i < g_iCountPrefix; i++)
 	{
-		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX, StrContains(g_iConfigPrefix[i].sPREFIX, g_iAPInfo[iClient].szPREFIX_Chat) != -1 ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX, StrEqual(g_iConfigPrefix[i].sPREFIX, g_iAPInfo[iClient].szPREFIX_Chat, true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 	hMenu.Display(iClient, 0);
 }
@@ -209,30 +200,33 @@ public int PrefixChatMenu_CallBack(Menu hMenu, MenuAction action, int iClient, i
 			strcopy(g_iAPInfo[iClient].szPREFIX_Chat, 64, szBuffer);
 			if(TrimString(szBuffer) > 0) CGOPrintToChat(iClient, "%s {GRAY}Вы установили новый префикс в чате: {LIGHTBLUE}%s", AP_CHAT_PREFIX, szBuffer);
 			else CGOPrintToChat(iClient, "%s {GRAY}Вы отключили префикс в чате.", AP_CHAT_PREFIX);
-			OpenPluginMainMenu(iClient);
+			PrefixChatMenu(iClient);
 		}
 	}
 }
 
-void PrefixChatColorsMenu(int iClient)
+stock void PrefixChatColorsMenu(int iClient)
 {
+	char szBuf[64];
+	strcopy(szBuf, sizeof(szBuf), g_iAPInfo[iClient].szPREFIXCOLOR);
+	ReplaceColorsName(szBuf, sizeof(szBuf));
 	Menu hMenu = new Menu(PrefixChatColorsMenu_CallBack);
 	hMenu.ExitBackButton = true;
-	hMenu.SetTitle("Цвет префикса в чате\nВыберите цвет:");
-	hMenu.AddItem("", 				"Отключить\n ");
-	hMenu.AddItem("{DEFAULT}", 		"Белый");
-	hMenu.AddItem("{TEAM}", 		"Командный");
-	hMenu.AddItem("{GREEN}",		"Зеленый");
-	hMenu.AddItem("{RED}",			"Красный");
-	hMenu.AddItem("{LIME}",			"Лайм");
-	hMenu.AddItem("{LIGHTGREEN}",	"Светло-Зеленый");
-	hMenu.AddItem("{LIGHTRED}",		"Светло-Красный");
-	hMenu.AddItem("{GRAY}",			"Серый");
-	hMenu.AddItem("{LIGHTOLIVE}",	"Светло-Оливковый");
-	hMenu.AddItem("{OLIVE}",		"Оливковый");
-	hMenu.AddItem("{PURPLE}",		"Фиолетовый");
-	hMenu.AddItem("{LIGHTBLUE}",	"Голубой");
-	hMenu.AddItem("{BLUE}",			"Синий");
+	hMenu.SetTitle("Цвет префикса в чате\nВыберите цвет:\n ");
+	hMenu.AddItem("", 				"Отключить\n ", g_iAPInfo[iClient].szPREFIXCOLOR[0] ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+	hMenu.AddItem("{DEFAULT}", 		"Белый", StrEqual(szBuf, "Белый", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{TEAM}", 		"Командный", StrEqual(szBuf, "Командный", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{GREEN}",		"Зеленый", StrEqual(szBuf, "Зеленый", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{RED}",			"Красный", StrEqual(szBuf, "Красный", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{LIME}",			"Лайм", StrEqual(szBuf, "Лайм", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{LIGHTGREEN}",	"Светло-Зеленый", StrEqual(szBuf, "Светло-Зеленый", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{LIGHTRED}",		"Светло-Красный", StrEqual(szBuf, "Светло-Красный", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{GRAY}",			"Серый", StrEqual(szBuf, "Серый", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{LIGHTOLIVE}",	"Светло-Оливковый", StrEqual(szBuf, "Светло-Оливковый", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{OLIVE}",		"Оливковый", StrEqual(szBuf, "Оливковый", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{PURPLE}",		"Фиолетовый", StrEqual(szBuf, "Фиолетовый", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{LIGHTBLUE}",	"Голубой", StrEqual(szBuf, "Голубой", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
+	hMenu.AddItem("{BLUE}",			"Синий", StrEqual(szBuf, "Синий", true) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	hMenu.Display(iClient, 0);
 }
 
@@ -253,7 +247,7 @@ public int PrefixChatColorsMenu_CallBack(Menu hMenu, MenuAction action, int iCli
 			strcopy(g_iAPInfo[iClient].szPREFIXCOLOR, 64, szBuffer);
 			if(TrimString(szBuffer) > 0) CGOPrintToChat(iClient, "%s {GRAY}Вы установили свой цвет.", AP_CHAT_PREFIX);
 			else CGOPrintToChat(iClient, "%s {GRAY}Вы отключили цвет префикса в чате.", AP_CHAT_PREFIX);
-			OpenPluginMainMenu(iClient);
+			PrefixChatColorsMenu(iClient);
 		}
 	}
 }
@@ -302,7 +296,7 @@ public void MenuCallBack2(TopMenu hMenu, TopMenuAction action, TopMenuObject obj
 	}
 }
 
-void ReplaceStringColors(char[] sMessage, int iMaxLen)
+stock void ReplaceStringColors(char[] sMessage, int iMaxLen)
 {
 	ReplaceString(sMessage, iMaxLen, "{DEFAULT}",		"\x01", false);
 	ReplaceString(sMessage, iMaxLen, "{TEAM}",			"\x03", false);
@@ -319,7 +313,7 @@ void ReplaceStringColors(char[] sMessage, int iMaxLen)
 	ReplaceString(sMessage, iMaxLen, "{BLUE}",			"\x0C", false);
 }
 
-void ReplaceColorsName(char[] sColor, int iMaxLen)
+stock void ReplaceColorsName(char[] sColor, int iMaxLen)
 {
 	ReplaceString(sColor, iMaxLen, "{DEFAULT}",			"Белый", 			false);
 	ReplaceString(sColor, iMaxLen, "{TEAM}",			"Командный", 		false);
@@ -345,7 +339,7 @@ stock bool IsValidClient(int iClient)
 	return false;
 }
 
-void LoadPluginConfig()
+stock void LoadPluginConfig()
 {
 	g_iCountPrefix = 0;
 	char szFile[255];
