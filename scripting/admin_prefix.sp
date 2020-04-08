@@ -8,7 +8,7 @@
 
 #define PLUGIN_NAME 		"Admin Prefix"
 #define PLUGIN_AUTHOR 		"1mpulse (Discord -> 1mpulse#6496)"
-#define PLUGIN_VERSION 		"1.0.5"
+#define PLUGIN_VERSION 		"1.0.6"
 
 #define AP_CHAT_PREFIX 		"[{LIGHTGREEN}Admin Prefix{DEFAULT}]"
 #define AP_MAX_PREFIX		32
@@ -151,7 +151,7 @@ void PrefixTabMenu(int iClient)
 	hMenu.AddItem("", "Отключить\n ");
 	for(int i = 0; i < g_iCountPrefix; i++)
 	{
-		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX);
+		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX, StrContains(g_iConfigPrefix[i].sPREFIX, g_iAPInfo[iClient].szPREFIX_Tab) != -1 ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 	hMenu.Display(iClient, 0);
 }
@@ -187,7 +187,7 @@ void PrefixChatMenu(int iClient)
 	hMenu.AddItem("", "Отключить\n ");
 	for(int i = 0; i < g_iCountPrefix; i++)
 	{
-		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX, StrContains(g_iConfigPrefix[i].sPREFIX, g_iAPInfo[iClient].szPREFIX_Chat) != -1 ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED);
+		hMenu.AddItem(g_iConfigPrefix[i].sPREFIX, g_iConfigPrefix[i].sPREFIX, StrContains(g_iConfigPrefix[i].sPREFIX, g_iAPInfo[iClient].szPREFIX_Chat) != -1 ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT);
 	}
 	hMenu.Display(iClient, 0);
 }
